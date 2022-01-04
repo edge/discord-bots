@@ -2,7 +2,7 @@
 
 # Discord Bots
 
-Collection of bots for the Edge community discord
+Collection of bots for the Edge community Discord server
 
 ## License
 
