@@ -2,7 +2,7 @@
 # Use of this source code is governed by a GNU GPL-style license
 # that can be found in the LICENSE.md file. All rights reserved.
 
-FROM node:lts
+FROM node:16
 
 WORKDIR /bots
 
