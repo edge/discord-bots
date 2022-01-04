@@ -23,7 +23,7 @@ def deployScript() {
     --detach \
     --name $NAME \
     --restart always \
-    --env PRICE_BOT_TOKEN=$PRICE_BOT_TOKEN
+    --env PRICE_BOT_TOKEN="$PRICE_BOT_TOKEN"
     $IMAGE
   ''')
 }
@@ -51,7 +51,7 @@ pipeline {
                 chmod +x ${filename} && \
                 NAME=$NAME \
                 IMAGE=$IMAGE \
-                PRICE_BOT_TOKEN=$PRICE_BOT_TOKEN \
+                PRICE_BOT_TOKEN='$PRICE_BOT_TOKEN' \
                   bash -x ./${filename} && \
                 rm ${filename}'"
             }
