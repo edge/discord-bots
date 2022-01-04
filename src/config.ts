@@ -6,6 +6,8 @@ import { Config } from '@edge/config'
 import { version } from '../package.json'
 
 export class GlobalConfig {
-  static readonly discordAccessToken = Config.getEnvString('DISCORD_ACCESS_TOKEN', '')
+  static readonly logLevel = Config.getEnvString('LOG_LEVEL', 'info')
+  static readonly priceBotToken = Config.getEnvString('PRICE_BOT_TOKEN', '')
+  static readonly priceUpdateInterval = Config.getEnvNumber('PRICE_UPDATE_INTERVAL', 1000 * 5)
   static readonly version = version
 }
