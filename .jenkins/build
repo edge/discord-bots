@@ -1,0 +1,50 @@
+#!/usr/bin/env groovy
+// Copyright (C) 2022 Edge Network Technologies Limited
+// Use of this source code is governed by a GNU GPL-style license
+// that can be found in the LICENSE.md file. All rights reserved.
+
+def buildAndPushImage(registry, registryCredential, tag) {
+  docker.withRegistry("https://$registry", registryCredential) {
+    def image = docker.build("$registry/$tag")
+    image.push()
+    return "$registry/$tag"
+  }
+}
+
+pipeline {
+  agent {
+    label 'local'
+  }
+  stages {
+    stage('Notify') {
+      steps {
+        discordSend title: JOB_NAME, description: "${env.JOB_NAME} (#${env.BUILD_NUMBER}) has started", result: "SUCCESS", webhookURL: DISCORD_BUILD_WEBHOOK
+      }
+    }
+
+    stage('Build') {
+      steps {
+        script {
+          def tag = buildAndPushImage(REGISTRY, REGISTRY_CREDENTIAL, NAME)
+        }
+      }
+    }
+  }
+  post {
+    success {
+      script {
+        discordSend title: JOB_NAME, description: "${env.JOB_NAME} (#${env.BUILD_NUMBER}) completed successfully", result: "SUCCESS", webhookURL: DISCORD_BUILD_WEBHOOK
+      }
+    }
+    failure {
+      script {
+        discordSend title: JOB_NAME, description: "${env.JOB_NAME} (#${env.BUILD_NUMBER}) failed", result: "FAILURE", webhookURL: DISCORD_BUILD_WEBHOOK
+      }
+    }
+    aborted {
+      script {
+        discordSend title: JOB_NAME, description: "${env.JOB_NAME} (#${env.BUILD_NUMBER}) was aborted", result: "ABORTED", webhookURL: DISCORD_BUILD_WEBHOOK
+      }
+    }
+  }
+}
