@@ -23,6 +23,9 @@ def deployScript() {
     --detach \
     --name $NAME \
     --restart always \
+    --env NETWORK_BOT_ENABLED=$NETWORK_BOT_ENABLED \
+    --env NETWORK_BOT_TOKEN=$NETWORK_BOT_TOKEN \
+    --env PRICE_BOT_ENABLED=$PRICE_BOT_ENABLED \
     --env PRICE_BOT_TOKEN=$PRICE_BOT_TOKEN \
     $IMAGE
   ''')
@@ -51,6 +54,9 @@ pipeline {
                 chmod +x ${filename} && \
                 NAME=$NAME \
                 IMAGE=$IMAGE \
+                NETWORK_BOT_ENABLED=$NETWORK_BOT_ENABLED \
+                NETWORK_BOT_TOKEN=$NETWORK_BOT_TOKEN \
+                PRICE_BOT_ENABLED=$PRICE_BOT_ENABLED \
                 PRICE_BOT_TOKEN=$PRICE_BOT_TOKEN \
                   bash -x ./${filename} && \
                 rm ${filename}'"
