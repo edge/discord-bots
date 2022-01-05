@@ -7,14 +7,14 @@ import { GlobalConfig } from '../config'
 import superagent from 'superagent'
 import { Log, LogLevelFromString, StdioAdaptor } from'@edge/log'
 
-export class PriceBot {
+export class NetworkBot {
   private log: Log
   private client: Discord.Client
   private interval?: NodeJS.Timeout
-  private lastPrice?: number
+  private lastSessions?: number
 
   constructor() {
-    this.log = new Log([new StdioAdaptor()], 'price-bot', LogLevelFromString(GlobalConfig.logLevel))
+    this.log = new Log([new StdioAdaptor()], 'network-bot', LogLevelFromString(GlobalConfig.logLevel))
 
     this.client = new Discord.Client({ intents: ['GUILDS'] })
     this.client.on('error', this.onError.bind(this))
@@ -23,7 +23,6 @@ export class PriceBot {
     this.client.on('rateLimit', this.onRateLimit.bind(this))
     this.client.on('messageCreate', this.onMessageCreate.bind(this))
     this.client.on('ready', this.onReady.bind(this))
-
   }
 
   onWarn(warn: string): void {
@@ -45,49 +44,41 @@ export class PriceBot {
 
   onMessageCreate(message: Discord.Message): void {
     if (message.author.bot) return
-    if (message.content === '!price') message.reply(`Latest price: $${this.lastPrice} USD/XE`)
   }
 
   onReady(): void {
     this.log.info(`Logged in as ${this.client.user?.tag}!`)
 
     if (this.interval) clearInterval(this.interval)
-    this.interval = setInterval(this.updateActivity.bind(this), GlobalConfig.priceUpdateInterval)
+    this.interval = setInterval(this.updateActivity.bind(this), GlobalConfig.networkUpdateInterval)
   }
 
   async updateActivity(): Promise<void> {
     try {
-      const response = await superagent.get('https://index.xe.network/tokenvalue')
+      const response = await superagent.get('https://stargate.test.network/sessions/open')
 
-      if (response?.body?.usdPerXE) {
-        const currentPrice = this.roundToSixDecimals(response.body.usdPerXE)
-        if (this.lastPrice === currentPrice) return
+      if (response.body) {
+        const sessions = response.body.length
+        if (this.lastSessions === sessions) return
 
-        const difference = this.lastPrice ? this.roundToSixDecimals(currentPrice - this.lastPrice) : 0
-        const sign = difference > 0 ? '+' : ''
-        this.log.info(`Updating price ticker to ${currentPrice} USD/XE (${sign}${difference})`)
-
-        const activity = `$${currentPrice.toFixed(6)}`
+        const activity = `${sessions} nodes online`
+        this.log.info(`Updating status ticker to '${activity}'`)
         this.client.user?.setActivity(activity, { type: 'WATCHING' })
-        this.lastPrice = currentPrice
+        this.lastSessions = sessions
 
         return
       }
 
-      this.log.warn('Failed to parse token value')
+      this.log.warn('Failed to query open sessions')
     }
     catch (error) {
       this.log.error('Failed to update activity', error as Error)
     }
   }
 
-  roundToSixDecimals(value: number): number {
-    return Math.round(value * 1000000) / 1000000
-  }
-
   start(): void {
-    if (!GlobalConfig.priceBotEnabled) return
+    if (!GlobalConfig.networkBotEnabled) return
     this.log.info('Logging in...')
-    this.client.login(GlobalConfig.priceBotToken)
+    this.client.login(GlobalConfig.networkBotToken)
   }
 }
