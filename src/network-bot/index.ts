@@ -16,7 +16,7 @@ export class NetworkBot {
   constructor() {
     this.log = new Log([new StdioAdaptor()], 'network-bot', LogLevelFromString(GlobalConfig.logLevel))
 
-    this.client = new Discord.Client({ intents: ['GUILDS'] })
+    this.client = new Discord.Client({ intents: ['GUILDS', 'GUILD_MESSAGES'] })
     this.client.on('error', this.onError.bind(this))
     this.client.on('warn', this.onWarn.bind(this))
     this.client.on('invalidated', this.onInvalidated.bind(this))
