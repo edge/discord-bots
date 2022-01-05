@@ -45,8 +45,7 @@ export class PriceBot {
 
   onMessageCreate(message: Discord.Message): void {
     if (message.author.bot) return
-    this.log.info(`${message.author.tag}: ${message.content}`)
-    if (message.content === 'ping') message.reply('pong')
+    if (message.content === '!price') message.reply(`Latest price: $${this.lastPrice} USD/XE`)
   }
 
   onReady(): void {
