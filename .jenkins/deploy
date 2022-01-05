@@ -45,7 +45,8 @@ pipeline {
           // Using a pre-authorized key, connect to the specified server and run the deploy script.
           sshagent(credentials: ['a687b920-fcb4-41e4-a878-5ae1f6850b26']) {
             withCredentials([
-              string(credentialsId: DISCORD_PRICE_BOT_TOKEN, variable: 'PRICE_BOT_TOKEN')
+              string(credentialsId: NETWORK_BOT_TOKEN, variable: 'NETWORK_BOT_TOKEN'),
+              string(credentialsId: PRICE_BOT_TOKEN, variable: 'PRICE_BOT_TOKEN')
             ]) {
               println "> deploying ${IMAGE} ($NAME) to ${DEPLOY_TARGET}..."
 
