@@ -55,7 +55,7 @@ export class NetworkBot {
 
   async updateActivity(): Promise<void> {
     try {
-      const response = await superagent.get('https://stargate.test.network/sessions/open')
+      const response = await superagent.get('https://stargate.edge.network/sessions/open')
 
       if (response.body) {
         const sessions = response.body.length
