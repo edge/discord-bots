@@ -57,7 +57,7 @@ export class PriceBot {
 
   async updateActivity(): Promise<void> {
     try {
-      const response = await superagent.get('https://index.xe.network/tokenvalue')
+      const response = await superagent.get('https://index.xe.network/token/current')
 
       if (response?.body?.usdPerXE) {
         const currentPrice = this.roundToSixDecimals(response.body.usdPerXE)
