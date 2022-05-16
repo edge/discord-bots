@@ -63,7 +63,8 @@ export class NetworkBot {
 
         const activity = `${sessions} nodes online`
         this.log.info(`Updating status ticker to '${activity}'`)
-        this.client.user?.setActivity(activity, { type: 'WATCHING' })
+        this.client.user?.setActivity('Network Status', { type: 'WATCHING' })
+        this.client.user?.setUsername(activity)
         this.lastSessions = sessions
 
         return

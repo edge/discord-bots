@@ -68,7 +68,8 @@ export class PriceBot {
         this.log.info(`Updating price ticker to ${currentPrice} USD/XE (${sign}${difference})`)
 
         const activity = `$${currentPrice.toFixed(6)}`
-        this.client.user?.setActivity(activity, { type: 'WATCHING' })
+        this.client.user?.setActivity('$EDGE Price', { type: 'WATCHING' })
+        this.client.user?.setUsername(activity)
         this.lastPrice = currentPrice
 
         return
