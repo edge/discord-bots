@@ -23,7 +23,6 @@ export class PriceBot {
     this.client.on('rateLimit', this.onRateLimit.bind(this))
     this.client.on('messageCreate', this.onMessageCreate.bind(this))
     this.client.on('ready', this.onReady.bind(this))
-
   }
 
   onWarn(warn: string): void {
