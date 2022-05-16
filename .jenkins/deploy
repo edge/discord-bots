@@ -23,6 +23,9 @@ def deployScript() {
     --detach \
     --name $NAME \
     --restart always \
+    --env GUILD_ID=$GUILD_ID \
+    --env MEMBERS_TOTAL_CHANNEL_ID=$MEMBERS_TOTAL_CHANNEL_ID \
+    --env MEMBERS_ONLINE_CHANNEL_ID=$MEMBERS_ONLINE_CHANNEL_ID \
     --env NETWORK_BOT_ENABLED=$NETWORK_BOT_ENABLED \
     --env NETWORK_BOT_TOKEN=$NETWORK_BOT_TOKEN \
     --env PRICE_BOT_ENABLED=$PRICE_BOT_ENABLED \
@@ -55,6 +58,9 @@ pipeline {
                 chmod +x ${filename} && \
                 NAME=$NAME \
                 IMAGE=$IMAGE \
+                GUILD_ID=$GUILD_ID \
+                MEMBERS_TOTAL_CHANNEL_ID=$MEMBERS_TOTAL_CHANNEL_ID \
+                MEMBERS_ONLINE_CHANNEL_ID=$MEMBERS_ONLINE_CHANNEL_ID \
                 NETWORK_BOT_ENABLED=$NETWORK_BOT_ENABLED \
                 NETWORK_BOT_TOKEN=$NETWORK_BOT_TOKEN \
                 PRICE_BOT_ENABLED=$PRICE_BOT_ENABLED \

@@ -16,7 +16,7 @@ export class NetworkBot {
   constructor() {
     this.log = new Log([new StdioAdaptor()], 'network-bot', LogLevelFromString(GlobalConfig.logLevel))
 
-    this.client = new Discord.Client({ intents: ['GUILDS', 'GUILD_MESSAGES'] })
+    this.client = new Discord.Client({ intents: ['GUILDS', 'GUILD_MESSAGES', 'GUILD_MEMBERS', 'GUILD_PRESENCES']})
     this.client.on('error', this.onError.bind(this))
     this.client.on('warn', this.onWarn.bind(this))
     this.client.on('invalidated', this.onInvalidated.bind(this))
@@ -61,11 +61,25 @@ export class NetworkBot {
         const sessions = response.body.length
         if (this.lastSessions === sessions) return
 
+        // Update network status via bot name/activity
         const activity = `${sessions} nodes online`
         this.log.info(`Updating status ticker to '${activity}'`)
         this.client.user?.setActivity('Network Status', { type: 'WATCHING' })
         this.client.user?.setUsername(activity)
         this.lastSessions = sessions
+
+        // Update member counts via channels
+        this.log.info('Updating member counts')
+        const guild = this.client.guilds.resolve(GlobalConfig.guildId)
+        const guildMembers = await guild?.members.fetch()
+        const guildMembersOnline = guildMembers?.filter(m => !m.user.bot && m.presence !== null)
+        const totalChannel = guild?.channels.resolve(GlobalConfig.membersTotalChannelId)
+        const onlineChannel = guild?.channels.resolve(GlobalConfig.membersOnlineChannelId)
+        const totalCount = guildMembers ? this.formatNumber(guildMembers.size) : 0
+        const onlineCount = guildMembersOnline ? this.formatNumber(guildMembersOnline.size) : 0
+        totalChannel?.setName(`Total Members: ${totalCount}`)
+        onlineChannel?.setName(`Online Members: ${onlineCount}`)
+        this.log.info('Member counts updated', { total: guildMembers?.size, online: guildMembersOnline?.size })
 
         return
       }
@@ -75,6 +89,11 @@ export class NetworkBot {
     catch (error) {
       this.log.error('Failed to update activity', error as Error)
     }
+  }
+
+  formatNumber(number: number): string {
+    if (number > 1000) return `${(number / 1000).toFixed(2)}K`
+    return number.toString()
   }
 
   start(): void {
