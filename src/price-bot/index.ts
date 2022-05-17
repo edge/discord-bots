@@ -68,7 +68,7 @@ export class PriceBot {
 
         const activity = `$${currentPrice.toFixed(6)}`
         this.client.user?.setActivity('$EDGE Price', { type: 'WATCHING' })
-        this.client.user?.setUsername(activity)
+        this.client.guilds.cache.forEach(guild => guild.me?.setNickname(activity))
         this.lastPrice = currentPrice
 
         return
