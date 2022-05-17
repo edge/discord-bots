@@ -65,7 +65,7 @@ export class NetworkBot {
         const activity = `${sessions} nodes online`
         this.log.info(`Updating status ticker to '${activity}'`)
         this.client.user?.setActivity('Network Status', { type: 'WATCHING' })
-        this.client.user?.setUsername(activity)
+        this.client.guilds.cache.forEach(guild => guild.me?.setNickname(activity))
         this.lastSessions = sessions
 
         // Update member counts via channels
