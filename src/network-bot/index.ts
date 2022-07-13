@@ -5,14 +5,13 @@
 import { API } from './api'
 import Discord from 'discord.js'
 import { GlobalConfig } from '../config'
-import { Metrics } from './metrics'
+import { Metrics, MetricsRegistry } from './metrics'
 import superagent from 'superagent'
 import { Log, LogLevelFromString, StdioAdaptor } from'@edge/log'
 
 export class NetworkBot {
-  private api: any
-  private metrics: any
-  private metricsRegistry: Metrics
+  private api: API
+  public metricsRegistry: MetricsRegistry
 
   private log: Log
   private client: Discord.Client
@@ -23,8 +22,7 @@ export class NetworkBot {
     this.log = new Log([new StdioAdaptor()], 'network-bot', LogLevelFromString(GlobalConfig.logLevel))
 
     this.api = new API(this)
-    this.metricsRegistry = new Metrics(this)
-    this.metrics = { offline: 0, online: 0}
+    this.metricsRegistry = new MetricsRegistry(this, this.log)
 
     this.client = new Discord.Client({ intents: ['GUILDS', 'GUILD_MESSAGES', 'GUILD_MEMBERS', 'GUILD_PRESENCES']})
     this.client.on('error', this.onError.bind(this))
@@ -59,52 +57,59 @@ export class NetworkBot {
   onReady(): void {
     this.log.info(`Logged in as ${this.client.user?.tag}!`)
 
+    this.updateActivity()
     if (this.interval) clearInterval(this.interval)
     this.interval = setInterval(this.updateActivity.bind(this), GlobalConfig.networkUpdateInterval)
   }
 
   async updateActivity(): Promise<void> {
     try {
-      const response = await superagent.get('https://stargate.edge.network/sessions/open')
-
-      if (response.body) {
-        const sessions = response.body.length
-        if (this.lastSessions === sessions) return
-
-        // Update network status via bot name/activity
-        const activity = `${sessions} nodes online`
-        this.log.info(`Updating status ticker to '${activity}'`)
-        this.client.user?.setActivity('Network Status', { type: 'WATCHING' })
-        this.client.guilds.cache.forEach(guild => guild.me?.setNickname(activity))
-        this.lastSessions = sessions
-
-        // Update member counts via channels
-        this.log.info('Updating member counts')
-        const guild = this.client.guilds.resolve(GlobalConfig.guildId)
-        const guildMembers = await guild?.members.fetch()
-        const guildMembersOnline = guildMembers?.filter(m => !m.user.bot && m.presence !== null)
-        const totalChannel = guild?.channels.resolve(GlobalConfig.membersTotalChannelId)
-        const onlineChannel = guild?.channels.resolve(GlobalConfig.membersOnlineChannelId)
-        const totalCount = guildMembers ? guildMembers.size : 0
-        const onlineCount = guildMembersOnline ? guildMembersOnline.size : 0
-
-
-        this.metrics.offline = totalCount - onlineCount
-        this.metrics.online = onlineCount
-        // this.metricsRegistry.updateMetrics(this.metrics)
-
-        totalChannel?.setName(`Total Members: ${this.formatNumber(totalCount)}`)
-        onlineChannel?.setName(`Online Members: ${this.formatNumber(onlineCount)}`)
-        this.log.info('Member counts updated', { total: guildMembers?.size, online: guildMembersOnline?.size })
-
-        return
-      }
-
-      this.log.warn('Failed to query open sessions')
+      this.updateMembers()
+      this.updateSessions()
     }
     catch (error) {
       this.log.error('Failed to update activity', error as Error)
     }
+  }
+
+  async updateSessions(): Promise<void> {
+    const response = await superagent.get('https://stargate.edge.network/sessions/open')
+    if (response.body) {
+      const sessions = response.body.length
+      if (this.lastSessions === sessions) return
+
+      // Update network status via bot name/activity
+      const activity = `${sessions} nodes online`
+      this.log.info(`Updating status ticker to '${activity}'`)
+      this.client.user?.setActivity('Network Status', { type: 'WATCHING' })
+      this.client.guilds.cache.forEach(guild => guild.me?.setNickname(activity))
+      this.lastSessions = sessions
+      return
+    }
+    this.log.warn('Failed to query open sessions')
+  }
+
+  async updateMembers(): Promise<void> {
+    // Update member counts via channels
+    this.log.info('Updating member counts')
+    const guild = this.client.guilds.resolve(GlobalConfig.guildId)
+    const guildMembers = await guild?.members.fetch()
+    const guildMembersOnline = guildMembers?.filter(m => !m.user.bot && m.presence !== null)
+    const totalChannel = guild?.channels.resolve(GlobalConfig.membersTotalChannelId)
+    const onlineChannel = guild?.channels.resolve(GlobalConfig.membersOnlineChannelId)
+    const totalCount = guildMembers ? guildMembers.size : 0
+    const onlineCount = guildMembersOnline ? guildMembersOnline.size : 0
+    totalChannel?.setName(`Total Members: ${this.formatNumber(totalCount)}`)
+    onlineChannel?.setName(`Online Members: ${this.formatNumber(onlineCount)}`)
+    this.log.info('Member counts updated', { total: guildMembers?.size, online: guildMembersOnline?.size })
+    // update metrics
+    const metrics: Metrics = {
+      members: {
+        offline: totalCount - onlineCount,
+        online: onlineCount
+      }
+    }
+    this.metricsRegistry.updateMetrics(metrics)
   }
 
   formatNumber(number: number): string {

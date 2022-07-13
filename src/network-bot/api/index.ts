@@ -4,13 +4,14 @@
 
 // import * as metrics from './metrics'
 // import cors from 'cors'
+import { NetworkBot } from '..'
 import express, { ErrorRequestHandler, RequestHandler } from 'express'
 
 export class API {
   private app: express.Express
-  private network: any
+  private network: NetworkBot
 
-  constructor(network: any) {
+  constructor(network: NetworkBot) {
     this.app = express()
     this.network = network
   }

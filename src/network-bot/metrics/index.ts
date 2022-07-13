@@ -5,62 +5,36 @@
 import * as client from 'prom-client'
 import { GlobalConfig } from '../../config'
 import { Log } from '@edge/log'
+import { NetworkBot } from '..'
 
 /** Metrics object shared through context. */
 export type PromMetrics = {
   members: client.Gauge<string>
 }
 
+export type Members = {
+  online: number
+  offline: number
+}
+
+export type Metrics = {
+  members: Members
+}
+
 const prefix = 'discord_'
 
-/** Create a metrics registry. */
-// export const createMetrics = (): [client.Registry, Metrics] => {
-//   const r = new client.Registry()
-
-//   if (config.metrics.collectDefault) client.collectDefaultMetrics({ register: r, prefix })
-
-//   const m: Metrics = {
-//     members: {
-//       online: new client.Gauge({
-//         name: `${prefix}online_members`,
-//         help: 'Number of Discord server members currently online',
-//         labelNames: ['status']
-//       }),
-//       total: new client.Gauge({
-//         name: `${prefix}total_members`,
-//         help: 'Total number of Discord server members',
-//         labelNames: ['status']
-//       })
-//     }
-//   }
-
-//   r.registerMetric(m.members.online)
-//   r.registerMetric(m.members.total)
-
-//   return [r, m]
-// }
-
-
-// export const getMetrics = ({ metricsRegistry }: Context): AuthenticatedRequestHandler => async (req, res, next) => {
-//   // if (!req.system) return unauthorized(res, next)
-//   res.send(await metricsRegistry.metrics())
-//   next()
-// }
-
-
-export class Metrics {
-  // public gateway: Gateway
-  // private log: Log
+export class MetricsRegistry {
+  private log: Log
   private metrics: PromMetrics
-  private network: any
-  private registry: client.Registry
+  private network: NetworkBot
+  public registry: client.Registry
 
-  constructor(network: any) {
-    // this.log = log
+  constructor(network: NetworkBot, log: Log) {
+    this.log = log
     this.network = network
 
     // Initialise default metric collection
-    client.collectDefaultMetrics({ prefix: 'discord' })
+    client.collectDefaultMetrics({ prefix: 'discord_' })
 
     this.registry = new client.Registry()
 
@@ -74,22 +48,20 @@ export class Metrics {
   }
 
   public async initialize(): Promise<void> {
-    // if (GlobalConfig.collectDefaultMetrics) client.collectDefaultMetrics({ register: this.registry, prefix })
+    if (GlobalConfig.collectDefaultMetrics) client.collectDefaultMetrics({ register: this.registry, prefix })
 
     this.registry.registerMetric(this.metrics.members)
 
-    await this.updateMembers()
-    setInterval(this.updateMembers.bind(this), GlobalConfig.networkUpdateInterval)
     // this.log.info('Initialized metrics')
     console.log('Initialized metrics')
   }
 
-  public async updateMembers(): Promise<void> {
-    const metrics = this.network.metrics
-    for (const status in metrics) {
-      this.metrics.members.labels(status).set(metrics[status])
-      // this.log.info(`Updated ${status} members metric`)
-      console.log(`Updated ${status} members metric`)
-    }
+  private async updateMembers(members: any): Promise<void> {
+    for (const status in members) this.metrics.members.labels(status).set(members[status])
+    this.log.info('Updated members metric')
+  }
+
+  public async updateMetrics(metrics: Metrics): Promise<void> {
+    this.updateMembers(metrics.members)
   }
 }
