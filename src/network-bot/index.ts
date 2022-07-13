@@ -5,14 +5,14 @@
 import { API } from './api'
 import Discord from 'discord.js'
 import { GlobalConfig } from '../config'
-// import { Metrics } from './metrics'
+import { Metrics } from './metrics'
 import superagent from 'superagent'
 import { Log, LogLevelFromString, StdioAdaptor } from'@edge/log'
 
 export class NetworkBot {
   private api: any
   private metrics: any
-  // private metricsRegistry: Metrics
+  private metricsRegistry: Metrics
 
   private log: Log
   private client: Discord.Client
@@ -23,7 +23,7 @@ export class NetworkBot {
     this.log = new Log([new StdioAdaptor()], 'network-bot', LogLevelFromString(GlobalConfig.logLevel))
 
     this.api = new API(this)
-    // this.metricsRegistry = new Metrics(this)
+    this.metricsRegistry = new Metrics(this)
     this.metrics = { offline: 0, online: 0}
 
     this.client = new Discord.Client({ intents: ['GUILDS', 'GUILD_MESSAGES', 'GUILD_MEMBERS', 'GUILD_PRESENCES']})
@@ -65,7 +65,6 @@ export class NetworkBot {
 
   async updateActivity(): Promise<void> {
     try {
-      console.log('test')
       const response = await superagent.get('https://stargate.edge.network/sessions/open')
 
       if (response.body) {
@@ -116,7 +115,7 @@ export class NetworkBot {
   start(): void {
     if (!GlobalConfig.networkBotEnabled) return
     this.api.initialize()
-    // this.metricsRegistry.initialize()
+    this.metricsRegistry.initialize()
     this.log.info('Logging in...')
     this.client.login(GlobalConfig.networkBotToken)
   }
