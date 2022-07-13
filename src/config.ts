@@ -6,6 +6,7 @@ import { Config } from '@edge/config'
 import { version } from '../package.json'
 
 export class GlobalConfig {
+  static readonly collectDefaultMetrics = Config.getEnvBoolean('COLLECT_DEFAULT_METRICS', false)
   static readonly logLevel = Config.getEnvString('LOG_LEVEL', 'info')
   static readonly guildId = Config.getEnvString('GUILD_ID', '')
   static readonly membersOnlineChannelId = Config.getEnvString('MEMBERS_ONLINE_CHANNEL_ID', '')
