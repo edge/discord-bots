@@ -2,8 +2,7 @@
 // Use of this source code is governed by a GNU GPL-style license
 // that can be found in the LICENSE.md file. All rights reserved.
 
-// import * as metrics from './metrics'
-// import cors from 'cors'
+import { GlobalConfig } from '../../config'
 import { NetworkBot } from '..'
 import cors from 'cors'
 import { version } from '../../../package.json'
@@ -39,6 +38,6 @@ export class API {
       res.send(await this.network.metricsRegistry.registry.metrics())
     })
 
-    app.listen('5000')
+    app.listen(GlobalConfig.httpsPort)
   }
 }

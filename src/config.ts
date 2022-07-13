@@ -9,6 +9,7 @@ export class GlobalConfig {
   static readonly collectDefaultMetrics = Config.getEnvBoolean('COLLECT_DEFAULT_METRICS', false)
   static readonly logLevel = Config.getEnvString('LOG_LEVEL', 'info')
   static readonly guildId = Config.getEnvString('GUILD_ID', '')
+  static readonly httpsPort = Config.getEnvNumber('HTTPS_PORT', 5000)
   static readonly membersOnlineChannelId = Config.getEnvString('MEMBERS_ONLINE_CHANNEL_ID', '')
   static readonly membersTotalChannelId = Config.getEnvString('MEMBERS_TOTAL_CHANNEL_ID', '')
   static readonly networkBotEnabled = Config.getEnvBoolean('NETWORK_BOT_ENABLED', true)
