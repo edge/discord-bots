@@ -6,7 +6,8 @@
   "license": "SEE LICENSE IN LICENSE.md",
   "author": "Edge Network <core@edge.network>",
   "contributors": [
-    "Adam K Dean <adam@edge.network>"
+    "Adam K Dean <adam@edge.network>",
+    "Will Garrett<will.garrett@edge.network>"
   ],
   "scripts": {
     "start": "node out/src/main.js",
