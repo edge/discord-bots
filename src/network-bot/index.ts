@@ -2,12 +2,18 @@
 // Use of this source code is governed by a GNU GPL-style license
 // that can be found in the LICENSE.md file. All rights reserved.
 
+import { API } from './api'
 import Discord from 'discord.js'
 import { GlobalConfig } from '../config'
+// import { Metrics } from './metrics'
 import superagent from 'superagent'
 import { Log, LogLevelFromString, StdioAdaptor } from'@edge/log'
 
 export class NetworkBot {
+  private api: any
+  private metrics: any
+  // private metricsRegistry: Metrics
+
   private log: Log
   private client: Discord.Client
   private interval?: NodeJS.Timeout
@@ -15,6 +21,10 @@ export class NetworkBot {
 
   constructor() {
     this.log = new Log([new StdioAdaptor()], 'network-bot', LogLevelFromString(GlobalConfig.logLevel))
+
+    this.api = new API(this)
+    // this.metricsRegistry = new Metrics(this)
+    this.metrics = { offline: 0, online: 0}
 
     this.client = new Discord.Client({ intents: ['GUILDS', 'GUILD_MESSAGES', 'GUILD_MEMBERS', 'GUILD_PRESENCES']})
     this.client.on('error', this.onError.bind(this))
@@ -55,6 +65,7 @@ export class NetworkBot {
 
   async updateActivity(): Promise<void> {
     try {
+      console.log('test')
       const response = await superagent.get('https://stargate.edge.network/sessions/open')
 
       if (response.body) {
@@ -75,10 +86,16 @@ export class NetworkBot {
         const guildMembersOnline = guildMembers?.filter(m => !m.user.bot && m.presence !== null)
         const totalChannel = guild?.channels.resolve(GlobalConfig.membersTotalChannelId)
         const onlineChannel = guild?.channels.resolve(GlobalConfig.membersOnlineChannelId)
-        const totalCount = guildMembers ? this.formatNumber(guildMembers.size) : 0
-        const onlineCount = guildMembersOnline ? this.formatNumber(guildMembersOnline.size) : 0
-        totalChannel?.setName(`Total Members: ${totalCount}`)
-        onlineChannel?.setName(`Online Members: ${onlineCount}`)
+        const totalCount = guildMembers ? guildMembers.size : 0
+        const onlineCount = guildMembersOnline ? guildMembersOnline.size : 0
+
+
+        this.metrics.offline = totalCount - onlineCount
+        this.metrics.online = onlineCount
+        // this.metricsRegistry.updateMetrics(this.metrics)
+
+        totalChannel?.setName(`Total Members: ${this.formatNumber(totalCount)}`)
+        onlineChannel?.setName(`Online Members: ${this.formatNumber(onlineCount)}`)
         this.log.info('Member counts updated', { total: guildMembers?.size, online: guildMembersOnline?.size })
 
         return
@@ -98,6 +115,8 @@ export class NetworkBot {
 
   start(): void {
     if (!GlobalConfig.networkBotEnabled) return
+    this.api.initialize()
+    // this.metricsRegistry.initialize()
     this.log.info('Logging in...')
     this.client.login(GlobalConfig.networkBotToken)
   }
