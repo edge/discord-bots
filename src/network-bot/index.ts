@@ -7,7 +7,7 @@ import Discord from 'discord.js'
 import { GlobalConfig } from '../config'
 import superagent from 'superagent'
 import { Log, LogLevelFromString, StdioAdaptor } from'@edge/log'
-import { Metrics, MetricsRegistry } from './metrics'
+import { Members, MetricsRegistry } from './metrics'
 
 export class NetworkBot {
   private api: API
@@ -102,14 +102,11 @@ export class NetworkBot {
     totalChannel?.setName(`Total Members: ${this.formatNumber(totalCount)}`)
     onlineChannel?.setName(`Online Members: ${this.formatNumber(onlineCount)}`)
     this.log.info('Member counts updated', { total: guildMembers?.size, online: guildMembersOnline?.size })
-    // update metrics
-    const metrics: Metrics = {
-      members: {
-        offline: totalCount - onlineCount,
-        online: onlineCount
-      }
-    }
-    this.metricsRegistry.updateMetrics(metrics)
+
+    // Update member metrics
+    const offlineCount = totalCount - onlineCount
+    this.metricsRegistry.updateMembers('offline', offlineCount)
+    this.metricsRegistry.updateMembers('online', onlineCount)
   }
 
   formatNumber(number: number): string {
