@@ -38,6 +38,6 @@ export class API {
       res.send(await this.network.metricsRegistry.registry.metrics())
     })
 
-    app.listen(GlobalConfig.httpsPort)
+    app.listen(GlobalConfig.httpPort)
   }
 }
