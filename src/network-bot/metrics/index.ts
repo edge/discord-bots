@@ -33,9 +33,6 @@ export class MetricsRegistry {
     this.log = log
     this.network = network
 
-    // Initialise default metric collection
-    client.collectDefaultMetrics({ prefix: 'discord_' })
-
     this.registry = new client.Registry()
 
     this.metrics = {
