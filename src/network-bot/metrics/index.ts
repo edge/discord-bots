@@ -56,12 +56,13 @@ export class MetricsRegistry {
     console.log('Initialized metrics')
   }
 
-  private async updateMembers(members: any): Promise<void> {
-    for (const status in members) this.metrics.members.labels(status).set(members[status])
-    this.log.info('Updated members metric')
+  private async updateMembers(k: keyof Members, n: number): Promise<void> {
+    this.metrics.members.labels(k).set(n)
   }
 
   public async updateMetrics(metrics: Metrics): Promise<void> {
-    this.updateMembers(metrics.members)
+    this.updateMembers('offline', metrics.members.offline)
+    this.updateMembers('online', metrics.members.online)
+    this.log.info('Updated members metric')
   }
 }
