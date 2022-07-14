@@ -5,9 +5,9 @@
 import { API } from './api'
 import Discord from 'discord.js'
 import { GlobalConfig } from '../config'
-import { Metrics, MetricsRegistry } from './metrics'
 import superagent from 'superagent'
 import { Log, LogLevelFromString, StdioAdaptor } from'@edge/log'
+import { Metrics, MetricsRegistry } from './metrics'
 
 export class NetworkBot {
   private api: API
