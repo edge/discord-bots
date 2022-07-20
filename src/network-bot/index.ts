@@ -93,8 +93,9 @@ export class NetworkBot {
     // Update member counts via channels
     this.log.info('Updating member counts')
     const guild = this.client.guilds.resolve(GlobalConfig.guildId)
-    const guildMembers = await guild?.members.fetch()
-    const guildMembersOnline = guildMembers?.filter(m => !m.user.bot && m.presence !== null)
+    const guildMembers = await guild?.members.fetch({ withPresences: true })
+    // eslint-disable-next-line max-len
+    const guildMembersOnline = guildMembers?.filter(m => !m.user.bot && m.presence !== null && m.presence.status !== 'offline')
     const totalChannel = guild?.channels.resolve(GlobalConfig.membersTotalChannelId)
     const onlineChannel = guild?.channels.resolve(GlobalConfig.membersOnlineChannelId)
     const totalCount = guildMembers ? guildMembers.size : 0
