@@ -16,7 +16,7 @@ export class NetworkBot {
   private log: Log
   private client: Discord.Client
   private interval?: NodeJS.Timeout
-  private lastSessions?: number
+  private lastNodeCount?: number
 
   constructor() {
     this.log = new Log([new StdioAdaptor()], 'network-bot', LogLevelFromString(GlobalConfig.logLevel))
@@ -65,28 +65,29 @@ export class NetworkBot {
   async updateActivity(): Promise<void> {
     try {
       this.updateMembers()
-      this.updateSessions()
+      this.updateNodes()
     }
     catch (error) {
       this.log.error('Failed to update activity', error as Error)
     }
   }
 
-  async updateSessions(): Promise<void> {
-    const response = await superagent.get('https://stargate.edge.network/sessions/open')
+  async updateNodes(): Promise<void> {
+    const response = await superagent.get('https://index.edge.network/nodes/stats')
     if (response.body) {
-      const sessions = response.body.length
-      if (this.lastSessions === sessions) return
+      const count = response.body.total
+      const nodeCount = count.stargates + count.gateways + count.hosts
+      if (this.lastNodeCount === nodeCount) return
 
       // Update network status via bot name/activity
-      const activity = `${sessions} nodes online`
+      const activity = `${nodeCount} nodes online`
       this.log.info(`Updating status ticker to '${activity}'`)
       this.client.user?.setActivity('Network Status', { type: 'WATCHING' })
       this.client.guilds.cache.forEach(guild => guild.me?.setNickname(activity))
-      this.lastSessions = sessions
+      this.lastNodeCount = nodeCount
       return
     }
-    this.log.warn('Failed to query open sessions')
+    this.log.warn('Failed to query node stats')
   }
 
   async updateMembers(): Promise<void> {
