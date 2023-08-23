@@ -73,7 +73,7 @@ export class NetworkBot {
   }
 
   async updateNodes(): Promise<void> {
-    const response = await superagent.get('https://index.edge.network/nodes/stats')
+    const response = await superagent.get('https://index.xe.network/nodes/stats')
     if (response.body) {
       const count = response.body.total
       const nodeCount = count.stargates + count.gateways + count.hosts
