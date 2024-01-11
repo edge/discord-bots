@@ -4,6 +4,10 @@
 
 Collection of bots for the Edge community Discord server
 
+## System Requirements
+
+- Node.js v16+
+
 ## Contributing
 
 Interested in contributing to the project? Amazing! Before you do, please have a quick look at our [Contributor Guidelines](CONTRIBUTING.md) where we've got a few tips to help you get started.
