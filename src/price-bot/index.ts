@@ -56,10 +56,13 @@ export class PriceBot {
 
   async updateActivity(): Promise<void> {
     try {
-      const response = await superagent.get('https://index.xe.network/token/current')
+      const response = await superagent.get('https://api.xeggex.com/api/v2/ticker/EDGE_USDT')
+      // const response = await superagent.get('https://index.xe.network/token/current')
 
-      if (response?.body?.usdPerXE) {
-        const currentPrice = this.roundToSixDecimals(response.body.usdPerXE)
+      // if (response?.body?.usdPerXE) {
+        // const currentPrice = this.roundToSixDecimals(response.body.usdPerXE)
+      if (response?.body?.last_price) {
+        const currentPrice = this.roundToSixDecimals(response.body.last_price)
         if (this.lastPrice === currentPrice) return
 
         const difference = this.lastPrice ? this.roundToSixDecimals(currentPrice - this.lastPrice) : 0
