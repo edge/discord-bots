@@ -58,7 +58,7 @@ export class PriceBot {
     try {
       // const response = await superagent.get('https://api.xeggex.com/api/v2/ticker/EDGE_USDT')
       // const response = await superagent.get('https://index.xe.network/token/current')
-      const response = await superagent.get(https://api.coingecko.com/api/v3/simple/price?ids=edge&vs_currencies=usd')
+      const response = await superagent.get('https://api.coingecko.com/api/v3/simple/price?ids=edge&vs_currencies=usd')
 
       // if (response?.body?.usdPerXE) {
         // const currentPrice = this.roundToSixDecimals(response.body.usdPerXE)
