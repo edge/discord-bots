@@ -66,7 +66,7 @@ export class PriceBot {
         const sign = difference > 0 ? '+' : ''
         this.log.info(`Updating price ticker to ${currentPrice} USD/XE (${sign}${difference})`)
 
-        const activity = `$${currentPrice.toFixed(2)}`
+        const activity = `$${currentPrice.toFixed(2)} (CoinGecko)`
         this.client.user?.setActivity('$EDGE Price', { type: 'WATCHING' })
         this.client.guilds.cache.forEach(guild => guild.me?.setNickname(activity))
         this.lastPrice = currentPrice
