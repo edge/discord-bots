@@ -56,20 +56,17 @@ export class PriceBot {
 
   async updateActivity(): Promise<void> {
     try {
-      const response = await superagent.get('https://api.xeggex.com/api/v2/ticker/EDGE_USDT')
-      // const response = await superagent.get('https://index.xe.network/token/current')
+      const response = await superagent.get('https://api.coingecko.com/api/v3/simple/price?ids=edge&vs_currencies=usd')
 
-      // if (response?.body?.usdPerXE) {
-        // const currentPrice = this.roundToSixDecimals(response.body.usdPerXE)
-      if (response?.body?.last_price) {
-        const currentPrice = this.roundToSixDecimals(response.body.last_price)
+      if (response?.body?.edge?.usd) {
+        const currentPrice = this.roundToTwoDecimals(response.body.edge.usd)
         if (this.lastPrice === currentPrice) return
 
-        const difference = this.lastPrice ? this.roundToSixDecimals(currentPrice - this.lastPrice) : 0
+        const difference = this.lastPrice ? this.roundToTwoDecimals(currentPrice - this.lastPrice) : 0
         const sign = difference > 0 ? '+' : ''
         this.log.info(`Updating price ticker to ${currentPrice} USD/XE (${sign}${difference})`)
 
-        const activity = `$${currentPrice.toFixed(6)}`
+        const activity = `$${currentPrice.toFixed(2)}`
         this.client.user?.setActivity('$EDGE Price', { type: 'WATCHING' })
         this.client.guilds.cache.forEach(guild => guild.me?.setNickname(activity))
         this.lastPrice = currentPrice
@@ -77,15 +74,15 @@ export class PriceBot {
         return
       }
 
-      this.log.warn('Failed to parse token value')
+      this.log.warn('Failed to parse token value from CoinGecko')
     }
     catch (error) {
       this.log.error('Failed to update activity', error as Error)
     }
   }
 
-  roundToSixDecimals(value: number): number {
-    return Math.round(value * 1000000) / 1000000
+  roundToTwoDecimals(value: number): number {
+    return Math.round(value * 100) / 100
   }
 
   start(): void {
