@@ -56,25 +56,31 @@ export class PriceBot {
 
   async updateActivity(): Promise<void> {
     try {
-      const response = await superagent.get('https://api.coingecko.com/api/v3/simple/price?ids=edge&vs_currencies=usd')
+      const response = await superagent.get('https://api.coingecko.com/api/v3/coins/edge/tickers')
 
-      if (response?.body?.edge?.usd) {
-        const currentPrice = this.roundToTwoDecimals(response.body.edge.usd)
-        if (this.lastPrice === currentPrice) return
+      if (response?.body?.tickers) {
+        // Find the ticker with identifier 'uniswap_v3'
+        const uniswapV3Ticker = response.body.tickers.find((ticker: { market: { identifier: string }, converted_last?: { usd: number } }) =>
+          ticker.market.identifier === 'uniswap_v3')
 
-        const difference = this.lastPrice ? this.roundToTwoDecimals(currentPrice - this.lastPrice) : 0
-        const sign = difference > 0 ? '+' : ''
-        this.log.info(`Updating price ticker to ${currentPrice} USD/XE (${sign}${difference})`)
+        if (uniswapV3Ticker?.converted_last?.usd) {
+          const currentPrice = this.roundToTwoDecimals(uniswapV3Ticker.converted_last.usd)
+          if (this.lastPrice === currentPrice) return
 
-        const activity = `$${currentPrice.toFixed(2)} (CoinGecko)`
-        this.client.user?.setActivity('$EDGE Price', { type: 'WATCHING' })
-        this.client.guilds.cache.forEach(guild => guild.me?.setNickname(activity))
-        this.lastPrice = currentPrice
+          const difference = this.lastPrice ? this.roundToTwoDecimals(currentPrice - this.lastPrice) : 0
+          const sign = difference > 0 ? '+' : ''
+          this.log.info(`Updating price ticker to ${currentPrice} USD/XE (${sign}${difference})`)
 
-        return
+          const activity = `$${currentPrice.toFixed(2)} (Uniswap V3)`
+          this.client.user?.setActivity('$EDGE Price', { type: 'WATCHING' })
+          this.client.guilds.cache.forEach(guild => guild.me?.setNickname(activity))
+          this.lastPrice = currentPrice
+
+          return
+        }
       }
 
-      this.log.warn('Failed to parse token value from CoinGecko')
+      this.log.warn('Failed to parse token value from CoinGecko Uniswap V3 ticker')
     }
     catch (error) {
       this.log.error('Failed to update activity', error as Error)
